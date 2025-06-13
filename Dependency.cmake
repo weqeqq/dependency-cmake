@@ -61,7 +61,9 @@ function(
   Dependency_ExternalProject 
   project_name repository tag define expected)
   set(configure
-    -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+    -DCMAKE_BUILD_TYPE=Release 
+    -DBUILD_SHARED_LIBS=OFF
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
     ${define}
   )
   ExternalProject_Add(${project_name}
