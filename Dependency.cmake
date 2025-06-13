@@ -1,6 +1,8 @@
 
 include_guard()
 
+include(ExternalProject)
+
 function(Dependency_HandleDefine define output)
   set(first true)
   foreach(value ${define})
