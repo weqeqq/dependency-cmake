@@ -24,44 +24,32 @@ function(Dependency_HandleExpected expected output)
   set(${output} ${byproducts} PARENT_SCOPE)
 endfunction()
 
-function(Dependency_ProjectName repository output)
-  string(REPLACE "/" "_" project_name ${repository})
-  set(${output} ${project_name} PARENT_SCOPE)
-endfunction()
-
 function(Dependency_Prepare repository tag expected define)
-  set(repository 
-    "https://github.com/${repository}.git" PARENT_SCOPE)
-  set(tag 
-    ${tag} PARENT_SCOPE)
+    get_filename_component(repository_name "${repository}" NAME)
+    set(target_name ${PROJECT_NAME}::external::${repository_name} PARENT_SCOPE)
+    set(repository "https://github.com/${repository}.git" PARENT_SCOPE)
+    set(tag ${tag} PARENT_SCOPE)
 
-  Dependency_ProjectName(
-    "${repository}"
-    "project_name"
-  )
-  set(project_name
-    ${project_name} PARENT_SCOPE)
+    set(project_name ${repository_name} PARENT_SCOPE)
 
-  Dependency_HandleDefine(
-    "${define}"
-    "define_output"
-  )
-  set(define 
-    ${define_output} PARENT_SCOPE)
+    Dependency_HandleDefine(
+        "${define}"
+        "define_output"
+    )
+    set(define ${define_output} PARENT_SCOPE)
 
-  Dependency_HandleExpected(
-    "${expected}"
-    "expected_output"
-  )
-  set(expected
-    ${expected_output} PARENT_SCOPE)
+    Dependency_HandleExpected(
+        "${expected}"
+        "expected_output"
+    )
+    set(expected ${expected_output} PARENT_SCOPE)
 endfunction()
 
 function(
-  Dependency_ExternalProject 
+  Dependency_ExternalProject
   project_name repository tag define expected)
   set(configure
-    -DCMAKE_BUILD_TYPE=Release 
+    -DCMAKE_BUILD_TYPE=Release
     -DBUILD_SHARED_LIBS=OFF
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
     ${define}
@@ -72,17 +60,17 @@ function(
     GIT_TAG        "${tag}"
 
     CONFIGURE_COMMAND
-    ${CMAKE_COMMAND} 
-      -S <SOURCE_DIR> 
+    ${CMAKE_COMMAND}
+      -S <SOURCE_DIR>
       -B <BINARY_DIR> ${configure}
 
     BUILD_COMMAND
-    ${CMAKE_COMMAND} 
+    ${CMAKE_COMMAND}
       --build <BINARY_DIR>
 
-    INSTALL_COMMAND 
-    ${CMAKE_COMMAND} 
-      --install <BINARY_DIR> 
+    INSTALL_COMMAND
+    ${CMAKE_COMMAND}
+      --install <BINARY_DIR>
       --prefix  <INSTALL_DIR>
 
     BUILD_BYPRODUCTS ${expected}
@@ -95,7 +83,7 @@ function(Dependency_Library target_name project_name expected)
     INTERFACE IMPORTED
   )
   ExternalProject_Get_Property(
-    ${project_name} 
+    ${project_name}
     INSTALL_DIR
   )
   file(MAKE_DIRECTORY ${INSTALL_DIR}/include)
@@ -133,26 +121,26 @@ function(
   )
 endfunction()
 
-function(Dependency target_name) 
-  cmake_parse_arguments(
-    ""
-    ""
-    "REPOSITORY;TAG"
-    "EXPECTED;DEFINE"
-    ${ARGV}
-  )
-  Dependency_Prepare(
-    "${_REPOSITORY}"
-    "${_TAG}"
-    "${_EXPECTED}"
-    "${_DEFINE}"
-  )
-  Dependency_Run(
-    "${project_name}"
-    "${repository}"
-    "${tag}"
-    "${define}"
-    "${expected}"
-    "${target_name}"
-  )
+function(Dependency repository tag)
+    cmake_parse_arguments(
+        "DEPENDENCY"
+        ""
+        ""
+        "EXPECTED;DEFINE"
+        ${ARGV}
+    )
+    Dependency_Prepare(
+        "${repository}"
+        "${tag}"
+        "${DEPENDENCY_EXPECTED}"
+        "${DEPENDENCY_DEFINE}"
+    )
+    Dependency_Run(
+        "${project_name}"
+        "${repository}"
+        "${tag}"
+        "${define}"
+        "${expected}"
+        "${target_name}"
+    )
 endfunction()
